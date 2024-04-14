@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: locust-100rps-1vu
+spec:
+  manualSelector: true
+  selector:
+    matchLabels:
+      app: locust
+  template:
+    metadata:
+      labels:
+        app: locust
+    spec:
+      volumes:
+      - name: locust-test-script
+        configMap:
+          name: locust-test
+      containers:
+      - name: locust-container
+        # image: vaipali/my-first-repo:locust_v2
+        image: locustio/locust
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "1"
+            memory: 1Gi
+        volumeMounts:
+        - name: locust-test-script
+          mountPath: /test_script/locustfile.py
+          subPath: locustfile.py
+        
+        args: ["-f", "/test_script/locustfile.py", "--headless", "--users", "1", "--spawn-rate", "1", "-H", "http://10.8.0.5:8000", "-t", "300s"]
+      restartPolicy: OnFailure
